@@ -67,9 +67,9 @@ class DjangoUserMixin(UserMixin):
                 # If the create fails below due to an IntegrityError, ensure that the transaction
                 # stays undamaged by wrapping the create in an atomic.
                 with transaction.atomic():
-                    user = cls.user_model().objects.create_user(*args, **kwargs)
+                    user = cls.user_model().objects.get_or_create(*args, **kwargs)
             else:
-                user = cls.user_model().objects.create_user(*args, **kwargs)
+                user = cls.user_model().objects.get_or_create(*args, **kwargs)
         except IntegrityError:
             # User might have been created on a different thread, try and find them.
             # If we don't, re-raise the IntegrityError.
