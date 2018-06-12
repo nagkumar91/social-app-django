@@ -67,9 +67,9 @@ class DjangoUserMixin(UserMixin):
                 # If the create fails below due to an IntegrityError, ensure that the transaction
                 # stays undamaged by wrapping the create in an atomic.
                 with transaction.atomic():
-                    user = cls.user_model().objects.get_or_create(*args, **kwargs)
+                    user, flag = cls.user_model().objects.get_or_create(*args, **kwargs)
             else:
-                user = cls.user_model().objects.get_or_create(*args, **kwargs)
+                user, flag = cls.user_model().objects.get_or_create(*args, **kwargs)
         except IntegrityError:
             # User might have been created on a different thread, try and find them.
             # If we don't, re-raise the IntegrityError.
@@ -128,14 +128,14 @@ class DjangoUserMixin(UserMixin):
             # If the create fails below due to an IntegrityError, ensure that the transaction
             # stays undamaged by wrapping the create in an atomic.
             with transaction.atomic():
-                existing_social_auth = cls.objects.get(user=user)
-                if existing_social_auth:
-                    return existing_social_auth
+                existing_social_auth = cls.objects.filter(uid=uid)
+                if len(existing_social_auth) > 0:
+                    return existing_social_auth[0]
                 social_auth = cls.objects.create(user=user, uid=uid, provider=provider)
         else:
-            existing_social_auth = cls.objects.get(user=user)
-            if existing_social_auth:
-                return existing_social_auth
+            existing_social_auth = cls.objects.filter(uid=uid)
+            if len(existing_social_auth) > 0:
+                return existing_social_auth[0]
             social_auth = cls.objects.create(user=user, uid=uid, provider=provider)
         return social_auth
 
