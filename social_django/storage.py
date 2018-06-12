@@ -128,8 +128,14 @@ class DjangoUserMixin(UserMixin):
             # If the create fails below due to an IntegrityError, ensure that the transaction
             # stays undamaged by wrapping the create in an atomic.
             with transaction.atomic():
+                existing_social_auth = cls.objects.get(user=user)
+                if existing_social_auth:
+                    return existing_social_auth
                 social_auth = cls.objects.create(user=user, uid=uid, provider=provider)
         else:
+            existing_social_auth = cls.objects.get(user=user)
+            if existing_social_auth:
+                return existing_social_auth
             social_auth = cls.objects.create(user=user, uid=uid, provider=provider)
         return social_auth
 
